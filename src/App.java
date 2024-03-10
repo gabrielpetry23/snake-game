@@ -1,0 +1,23 @@
+
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.*;
+
+public class App extends JFrame {
+    public static void main (String[] args) {
+        new App();
+    }
+
+    App () {
+        Tela tela = new Tela();
+        add(tela);
+        setTitle("SnakeGame");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setResizable(true);
+        pack();
+        setVisible(true);
+        setLocationRelativeTo(null);
+    }
+}
