@@ -8,11 +8,12 @@ import javax.swing.*;
 public class App extends JFrame {
     public static void main (String[] args) {
         new App();
+        
     }
 
     App () {
-        Tela tela = new Tela();
-        add(tela);
+        SnakeGame game = new SnakeGame();
+        add(game);
         setTitle("SnakeGame");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(true);
