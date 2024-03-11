@@ -1,20 +1,18 @@
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.event.*;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.Random;
 
 import javax.swing.*;
 
-public class Tela extends JPanel implements ActionListener{
+public class Tela extends JPanel implements ActionListener {
     private static final int alturaTela = 800;
     private static final int larguraTela = 1200;
     private static final int tamBloco = 45;
     private static final int unidades = larguraTela * alturaTela / (tamBloco * tamBloco);
-    private static final int intervalo = 100;
-    private static final String nomeFonte = "Ink Free";
 
     private final int[] eixoX = new int[unidades];
     private final int[] eixoY = new int[unidades]; 
@@ -26,6 +24,7 @@ public class Tela extends JPanel implements ActionListener{
     private char direcao = 'D';
     // W - cima | S - baixo | A - esquerda | D - direita
     private boolean executando = false;
+    private boolean jogoReiniciado = false;
     Timer timer;
     Random random; //gerador do número do bloco
 
@@ -38,27 +37,24 @@ public class Tela extends JPanel implements ActionListener{
         executar();
     }
 
-    public void reiniciar () {
+    public void executar () {
+        criarMaca();
+        executando = true;
+        timer = new Timer(115, this);
+        timer.start();
+    }
+
+    public void reiniciarJogo() {
         corpoCobra = 6;
         blocosComidos = 0;
         direcao = 'D';
         executando = true;
-        criarBloco();
-        for (int i = 0; i < corpoCobra; i++) {
-            eixoX[i] = larguraTela / 2 - i * tamBloco;
-            eixoY[i] = alturaTela / 2;
-        }
-        timer.restart(); 
+        jogoReiniciado = true;
+        criarMaca();
+        timer.restart();  // Reinicie o timer
     }
 
-    public void executar () {
-        criarBloco();
-        executando = true;
-        timer = new Timer(intervalo, this);
-        timer.start();
-    }
-
-    private void criarBloco () {
+    private void criarMaca () {
         blocoX = random.nextInt(larguraTela / tamBloco) * tamBloco;
         blocoY = random.nextInt(alturaTela / tamBloco) * tamBloco;
     }
@@ -78,9 +74,8 @@ public class Tela extends JPanel implements ActionListener{
                 }
             }
             g.setColor(Color.red);
-            g.setFont(new Font(nomeFonte, Font.BOLD, 30));
-            FontMetrics m = getFontMetrics(g.getFont());
-            g.drawString(Integer.toString(blocosComidos), (larguraTela - m.stringWidth(Integer.toString(blocosComidos))) / 2, g.getFont().getSize());
+            g.setFont(new Font("Arial", Font.BOLD, 30));
+            g.drawString(String.valueOf(blocosComidos), 10, 35);
 
         } else {
             encerrar(g);
@@ -88,14 +83,13 @@ public class Tela extends JPanel implements ActionListener{
     }
 
     public void encerrar (Graphics g) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 25));
+        g.drawString("Pontuação: " +blocosComidos, 525, 440);
         g.setColor(Color.red);
-        g.setFont(new Font(nomeFonte, Font.BOLD, 30));
-        FontMetrics fontePoints = getFontMetrics(g.getFont());
-        g.drawString("Pontuação: " +blocosComidos, (larguraTela - fontePoints.stringWidth("Pontuação: " +blocosComidos)) / 2, g.getFont().getSize());
-        g.setColor(Color.red);
-        g.setFont(new Font(nomeFonte, Font.BOLD, 70));
-        FontMetrics fm = getFontMetrics(g.getFont());
-        g.drawString("You lost", (larguraTela - fm.stringWidth("You lost")) / 2, alturaTela / 2);
+        g.setFont(new Font("Arial", Font.BOLD, 65));
+        g.drawString("You lost", 470, alturaTela / 2);
+        timer.stop();
     }
 
     @Override
@@ -104,13 +98,17 @@ public class Tela extends JPanel implements ActionListener{
         desenharTela(g);
     }
 
+    @Override
     public void actionPerformed (ActionEvent e) {
         if (executando) {
             andar();
             alcancarBloco();
             inserirLimites();
-        } 
+        } else {
+            encerrar(getGraphics());
+        }
         repaint();
+        jogoReiniciado = false;
     }
 
     private void andar () {
@@ -141,7 +139,7 @@ public class Tela extends JPanel implements ActionListener{
         if (eixoX[0] == blocoX && eixoY[0] == blocoY) {
             corpoCobra++;
             blocosComidos++;
-            criarBloco();
+            criarMaca();
         }
     }
 
@@ -190,6 +188,11 @@ public class Tela extends JPanel implements ActionListener{
                         direcao = 'S';
                     }
                     break;
+                    case KeyEvent.VK_SPACE:
+                        if (!executando) {
+                            reiniciarJogo();
+                        }
+                        break;
                 default:
                     break;
             }
