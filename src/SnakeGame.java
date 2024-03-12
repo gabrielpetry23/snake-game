@@ -7,34 +7,34 @@ import java.util.Random;
 import javax.swing.*;
 
 public class SnakeGame extends JPanel implements ActionListener {
+    /*
+        - Add condição pedra n pode aparecer onde ta uma maça ou cobra
+        - Ajeitar Menu
+        - Add fase muito díficil
+        - A cada maça aumentar numero de pedras na fase "Muito Difícil"
+     */
     private static final int alturaTela = 800;
     private static final int larguraTela = 1200;
     private static final int tamBloco = 45;
     private static final int unidades = larguraTela * alturaTela / (tamBloco * tamBloco);
+    private int qntPedras = 5;
 
     private final int[] eixoX = new int[unidades];
     private final int[] eixoY = new int[unidades]; 
-
-
+    private int[] pedraaX = new int [qntPedras];
+    private int[] pedraaY = new int[qntPedras];
 
     private int corpoCobra = 6;
     private int blocosComidos;
     private int macaX;
     private int macaY;
-    private int pedraX;
-    private int pedraY;
     private char direcao = 'D';
     private boolean executandoFacil = false;
     private boolean executandoMedio = false;
     private boolean executandoDificil = false;
 
-    private int pedraX2;
-    private int pedraY2;
-
     Timer timer;
     Random random;
-
-    //criar classe criarPedra construtor passo numero que quero criar
     
     SnakeGame () {
         random = new Random();
@@ -51,9 +51,9 @@ public class SnakeGame extends JPanel implements ActionListener {
             painel.setBackground(Color.BLACK);
             JLabel text1 = new JLabel("Bem vindo ao Snake Game");
             JLabel text2 = new JLabel("Escolha a dificuldade que deseja jogar");
-            text1.setFont(new Font("Arial", Font.BOLD, 24)); // Ajuste o tamanho e o estilo da fonte conforme necessário
+            text1.setFont(new Font("Arial", Font.BOLD, 24)); 
             text1.setHorizontalAlignment(JLabel.CENTER);
-            text1.setVerticalAlignment(JLabel.CENTER); // Centraliza o texto verticalmente
+            text1.setVerticalAlignment(JLabel.CENTER);
             text1.setForeground(Color.WHITE);
 
             setLayout(new BorderLayout()); 
@@ -126,13 +126,10 @@ public class SnakeGame extends JPanel implements ActionListener {
     }
 
     public void criarPedra () {
-        pedraX = random.nextInt(larguraTela / tamBloco) * tamBloco;
-        pedraY = random.nextInt(alturaTela / tamBloco) * tamBloco;
-    }
-
-    private void criarPedra2 () {
-        pedraX2 = random.nextInt(larguraTela / tamBloco) * tamBloco;
-        pedraY2 = random.nextInt(alturaTela / tamBloco) * tamBloco;
+        for (int i = 0 ; i < qntPedras ; i++) {
+            pedraaX[i] = random.nextInt(larguraTela / tamBloco) * tamBloco;
+            pedraaY[i] = random.nextInt(larguraTela / tamBloco) * tamBloco;
+        }
     }
 
     @Override
@@ -173,9 +170,9 @@ public class SnakeGame extends JPanel implements ActionListener {
         } else if (executandoDificil) {
             desenho(g);
             g.setColor(Color.GRAY);
-            g.fillRect(pedraX, pedraY, tamBloco, tamBloco); 
-            g.setColor(Color.GRAY);
-            g.fillRect(pedraX2, pedraY2, tamBloco, tamBloco); 
+            for (int i = 0 ; i < qntPedras ; i++) {
+                g.fillRect(pedraaX[i], pedraaY[i], tamBloco, tamBloco);
+            }
         } else {
             encerrar(g);
         }
@@ -189,6 +186,7 @@ public class SnakeGame extends JPanel implements ActionListener {
         g.setFont(new Font("Arial", Font.BOLD, 65));
         g.drawString("You lost", 470, alturaTela / 2);
         timer.stop();
+        menuFases();
     }
 
     @Override
@@ -208,6 +206,7 @@ public class SnakeGame extends JPanel implements ActionListener {
             eixoY[i] = eixoY[i - 1];
         }
 
+        //Atualiza as posições da cobra com base na direção atual
         switch (direcao) {
             case 'W':
                 eixoY[0] = eixoY[0] - tamBloco;
@@ -232,14 +231,15 @@ public class SnakeGame extends JPanel implements ActionListener {
             blocosComidos++;
             criarMaca();
             criarPedra();
-            criarPedra2();
         }
     }
 
     private void inserirLimites () {
         //Condição da pedra
-        if (eixoX[0] == pedraX && eixoY[0] == pedraY || eixoX[0] == pedraX2 && eixoY[0] == pedraY2) {
-            executandoDificil = false;
+        for (int i = 0 ; i < qntPedras ; i++) {
+            if (eixoX[0] == pedraaX[i] && eixoY[0] == pedraaY[i]) {
+                executandoDificil = false;
+            }
         }
 
         //Condição do corpo
@@ -264,21 +264,15 @@ public class SnakeGame extends JPanel implements ActionListener {
             executandoMedio = false;
             executandoDificil = false;
         }
-        /*if (!executandoFacil) {
-            timer.stop();
-        } 
-
-        if (!executandoMedio) {
-            timer.stop();
-        } */
     }
 
     public class LeitorDeTeclas extends KeyAdapter {
+        //Interação do usuário e controle da cobra
         @Override
         public void keyPressed (KeyEvent e) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_LEFT:
-                    if (direcao != 'D') {
+                    if (direcao != 'D') { //não permite que volte na direção oposta
                         direcao = 'A';
                     }
                     break;
