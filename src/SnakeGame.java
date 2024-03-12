@@ -17,28 +17,18 @@ public class SnakeGame extends JPanel implements ActionListener {
 
     private int corpoCobra = 6;
     private int blocosComidos;
-    private int blocoX;
-    private int blocoY;
+    private int macaX;
+    private int macaY;
+    private int pedraX;
+    private int pedraY;
     private char direcao = 'D';
-    private boolean executando1 = false;
-    private boolean executando2 = false;
+    private boolean executandoFacil = false;
+    private boolean executandoMedio = false;
+    private boolean executandoDificil = false;
 
     Timer timer;
     Random random;
-    /*Criar menu:
-     poderia criar metodo no construtor do SnakeGame que chama executar1 se escolher opcao 1
-     chama executar2 se escolhe opcao 2 etc
-
-     no executar2 muda o time pra menos e executando2 = true
-     ai no metodo desenharTela() muda condicao p se tiver executando2 = true desenha uma pedra e add if executando2 no inserirLimites() bota que se
-     tocar na pedra perde
-
-     teste 1 fazer fase 2 que so aumenta a velocidade, mas antes tenho que fazer o menu ver se funciona
-
-     solução é cri
-     */
     
-
     SnakeGame () {
         random = new Random();
         setPreferredSize(new Dimension(larguraTela, alturaTela));
@@ -59,30 +49,41 @@ public class SnakeGame extends JPanel implements ActionListener {
             text1.setVerticalAlignment(JLabel.CENTER); // Centraliza o texto verticalmente
             text1.setForeground(Color.WHITE);
 
-            
-
             setLayout(new BorderLayout()); 
-            JButton botaoOpcao1 = new JButton("Opção 1");
-            JButton botaoOpcao2 = new JButton("Opção 2");
+            JButton botaoFacil = new JButton("Facil");
+            JButton botaoMedio = new JButton("Médio");
+            JButton botaoDificil = new JButton("Difícil");
             
             painel.add(text1);
             painel.add(text2);
-            painel.add(botaoOpcao1);
-            painel.add(botaoOpcao2);
+            painel.add(botaoFacil);
+            painel.add(botaoMedio);
+            painel.add(botaoDificil);
     
-            botaoOpcao1.addActionListener(new ActionListener() {
+            botaoFacil.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     remove(painel);
                     repaint();
-                    executar1();
+                    executarFacil();
                 }
             });
     
-            botaoOpcao2.addActionListener(new ActionListener() {
+            botaoMedio.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    executar2();
+                    remove(painel);
+                    repaint();
+                    executarMedio();
+                }
+            });
+
+            botaoDificil.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    remove(painel);
+                    repaint();
+                    executarDificil();
                 }
             });
             
@@ -90,24 +91,36 @@ public class SnakeGame extends JPanel implements ActionListener {
             setVisible(true);
         }
 
-    public void executar1 () {
+    public void executarFacil () {
         criarMaca();
-        executando1 = true;
-        timer = new Timer(100, this);
+        executandoFacil = true;
+        timer = new Timer(90, this);
         timer.start();
     }
 
-    public void executar2 () {
+    public void executarMedio () {
         criarMaca();
-        executando2 = true;
+        executandoMedio = true;
+        timer = new Timer(120, this);
+        timer.start();
+    }
+
+    public void executarDificil () {
+        criarMaca();
+        executandoDificil = true;
         timer = new Timer(125, this);
         timer.start();
     }
 
     private void criarMaca () {
         //Cria as maças em blocos aleatorios
-        blocoX = random.nextInt(larguraTela / tamBloco) * tamBloco;
-        blocoY = random.nextInt(alturaTela / tamBloco) * tamBloco;
+        macaX = random.nextInt(larguraTela / tamBloco) * tamBloco;
+        macaY = random.nextInt(alturaTela / tamBloco) * tamBloco;
+    }
+
+    private void criarPedra () {
+        pedraX = random.nextInt(larguraTela / tamBloco) * tamBloco;
+        pedraY = random.nextInt(alturaTela / tamBloco) * tamBloco;
     }
 
     @Override
@@ -116,12 +129,10 @@ public class SnakeGame extends JPanel implements ActionListener {
         desenharTela(g);
     }
 
-    public void desenharTela (Graphics g) {
-
-        if (executando1) {
+    private void desenho (Graphics g) {
             //Maça
             g.setColor(Color.red);
-            g.fillOval(blocoX, blocoY, tamBloco, tamBloco); 
+            g.fillOval(macaX, macaY, tamBloco, tamBloco); 
 
             //Snake
             for (int i = 0; i < corpoCobra; i++) { 
@@ -140,10 +151,22 @@ public class SnakeGame extends JPanel implements ActionListener {
             g.setColor(Color.red);
             g.setFont(new Font("Arial", Font.BOLD, 30));
             g.drawString(String.valueOf(blocosComidos), 10, 35);
+    }
 
+    public void desenharTela (Graphics g) {
+
+        if (executandoFacil || executandoMedio) {
+            desenho(g);
+
+        } else if (executandoDificil) {
+            desenho(g);
+            g.setColor(Color.GRAY);
+            g.fillRect(pedraX, pedraY, tamBloco, tamBloco); 
         } else {
             encerrar(g);
-        }   
+        }
+
+        //falta logica comer maca adiciona mais uma pedra randomicamente ou adiciono varias pedras qnd inicia e quando comer maca muda os lugares (porem n pode ser no corpo da cobra se for mt dificil fz isso vamos so por pedras aleatoriamente e n pode ser no msm lugar q tiver maca)
     }
 
     public void encerrar (Graphics g) {
@@ -158,7 +181,7 @@ public class SnakeGame extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed (ActionEvent e) {
-        if (executando1) {
+        if (executandoFacil || executandoMedio || executandoDificil) {
             andar();
             comeuMaca();
             inserirLimites();
@@ -192,7 +215,7 @@ public class SnakeGame extends JPanel implements ActionListener {
     }
 
     private void comeuMaca () {
-        if (eixoX[0] == blocoX && eixoY[0] == blocoY) {
+        if (eixoX[0] == macaX && eixoY[0] == macaY) {
             corpoCobra++;
             blocosComidos++;
             criarMaca();
@@ -203,23 +226,26 @@ public class SnakeGame extends JPanel implements ActionListener {
         //Condição do corpo
         for (int i = corpoCobra; i > 0; i--) { 
             if (eixoX[0] == eixoX[i] && eixoY[0] == eixoY[i]) {
-                executando1 = false;
+                executandoFacil = false;
                 break;
             }
         }
 
         //Condição das bordas
         if (eixoX[0] < 0 || eixoX[0] > larguraTela) { //Esquerda ou Direita
-            executando1 = false;
+            executandoFacil = false;
         }
 
         if (eixoY[0] < 0 || eixoY[0] > alturaTela) { //Cima ou Baixo
-            executando1 = false;
+            executandoFacil = false;
         }
-
-        if (!executando1) {
+        /*if (!executandoFacil) {
             timer.stop();
-        }
+        } 
+
+        if (!executandoMedio) {
+            timer.stop();
+        } */
     }
 
     public class LeitorDeTeclas extends KeyAdapter {
