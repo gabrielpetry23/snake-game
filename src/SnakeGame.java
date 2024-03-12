@@ -15,6 +15,8 @@ public class SnakeGame extends JPanel implements ActionListener {
     private final int[] eixoX = new int[unidades];
     private final int[] eixoY = new int[unidades]; 
 
+
+
     private int corpoCobra = 6;
     private int blocosComidos;
     private int macaX;
@@ -26,8 +28,13 @@ public class SnakeGame extends JPanel implements ActionListener {
     private boolean executandoMedio = false;
     private boolean executandoDificil = false;
 
+    private int pedraX2;
+    private int pedraY2;
+
     Timer timer;
     Random random;
+
+    //criar classe criarPedra construtor passo numero que quero criar
     
     SnakeGame () {
         random = new Random();
@@ -118,9 +125,14 @@ public class SnakeGame extends JPanel implements ActionListener {
         macaY = random.nextInt(alturaTela / tamBloco) * tamBloco;
     }
 
-    private void criarPedra () {
+    public void criarPedra () {
         pedraX = random.nextInt(larguraTela / tamBloco) * tamBloco;
         pedraY = random.nextInt(alturaTela / tamBloco) * tamBloco;
+    }
+
+    private void criarPedra2 () {
+        pedraX2 = random.nextInt(larguraTela / tamBloco) * tamBloco;
+        pedraY2 = random.nextInt(alturaTela / tamBloco) * tamBloco;
     }
 
     @Override
@@ -162,11 +174,11 @@ public class SnakeGame extends JPanel implements ActionListener {
             desenho(g);
             g.setColor(Color.GRAY);
             g.fillRect(pedraX, pedraY, tamBloco, tamBloco); 
+            g.setColor(Color.GRAY);
+            g.fillRect(pedraX2, pedraY2, tamBloco, tamBloco); 
         } else {
             encerrar(g);
         }
-
-        //falta logica comer maca adiciona mais uma pedra randomicamente ou adiciono varias pedras qnd inicia e quando comer maca muda os lugares (porem n pode ser no corpo da cobra se for mt dificil fz isso vamos so por pedras aleatoriamente e n pode ser no msm lugar q tiver maca)
     }
 
     public void encerrar (Graphics g) {
@@ -219,14 +231,23 @@ public class SnakeGame extends JPanel implements ActionListener {
             corpoCobra++;
             blocosComidos++;
             criarMaca();
+            criarPedra();
+            criarPedra2();
         }
     }
 
     private void inserirLimites () {
+        //Condição da pedra
+        if (eixoX[0] == pedraX && eixoY[0] == pedraY || eixoX[0] == pedraX2 && eixoY[0] == pedraY2) {
+            executandoDificil = false;
+        }
+
         //Condição do corpo
         for (int i = corpoCobra; i > 0; i--) { 
             if (eixoX[0] == eixoX[i] && eixoY[0] == eixoY[i]) {
                 executandoFacil = false;
+                executandoMedio = false;
+                executandoDificil = false;
                 break;
             }
         }
@@ -234,10 +255,14 @@ public class SnakeGame extends JPanel implements ActionListener {
         //Condição das bordas
         if (eixoX[0] < 0 || eixoX[0] > larguraTela) { //Esquerda ou Direita
             executandoFacil = false;
+            executandoMedio = false;
+            executandoDificil = false;
         }
 
         if (eixoY[0] < 0 || eixoY[0] > alturaTela) { //Cima ou Baixo
             executandoFacil = false;
+            executandoMedio = false;
+            executandoDificil = false;
         }
         /*if (!executandoFacil) {
             timer.stop();
