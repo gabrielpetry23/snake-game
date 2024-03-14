@@ -7,24 +7,18 @@ import java.util.Random;
 import javax.swing.*;
 
 public class SnakeGame extends JPanel implements ActionListener {
-    /*
-        - Add condição pedra n pode aparecer onde ta uma maça ou cobra
-        - Ajeitar Menu
-        - Add fase muito díficil
-        - A cada maça aumentar numero de pedras na fase "Muito Difícil"
-     */
     private static final int alturaTela = 800;
     private static final int larguraTela = 1200;
     private static final int tamBloco = 45;
     private static final int unidades = larguraTela * alturaTela / (tamBloco * tamBloco);
-    private int qntPedras = 5;
+    private int qntPedras = 12;
 
     private final int[] eixoX = new int[unidades];
     private final int[] eixoY = new int[unidades]; 
-    private int[] pedraaX = new int [qntPedras];
-    private int[] pedraaY = new int[qntPedras];
+    private int[] pedraX = new int [qntPedras];
+    private int[] pedraY = new int[qntPedras];
 
-    private int corpoCobra = 6;
+    private int corpoCobra = 3;
     private int blocosComidos;
     private int macaX;
     private int macaY;
@@ -38,34 +32,39 @@ public class SnakeGame extends JPanel implements ActionListener {
     
     SnakeGame () {
         random = new Random();
+        criarPedra();
         setPreferredSize(new Dimension(larguraTela, alturaTela));
         setBackground(Color.BLACK);
         addKeyListener(new LeitorDeTeclas());
         setFocusable(true);
         menuFases();
-        //executar();
     }
 
         public void menuFases() {
             JPanel painel = new JPanel();
             painel.setBackground(Color.BLACK);
+            painel.setLayout(new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
+            gbc.anchor = GridBagConstraints.CENTER;
+            gbc.insets = new Insets(10, 0, 10, 0);
             JLabel text1 = new JLabel("Bem vindo ao Snake Game");
             JLabel text2 = new JLabel("Escolha a dificuldade que deseja jogar");
             text1.setFont(new Font("Arial", Font.BOLD, 24)); 
-            text1.setHorizontalAlignment(JLabel.CENTER);
-            text1.setVerticalAlignment(JLabel.CENTER);
+            text2.setFont(new Font("Arial", Font.BOLD, 18)); 
             text1.setForeground(Color.WHITE);
+            text2.setForeground(Color.RED);
 
             setLayout(new BorderLayout()); 
             JButton botaoFacil = new JButton("Facil");
             JButton botaoMedio = new JButton("Médio");
             JButton botaoDificil = new JButton("Difícil");
             
-            painel.add(text1);
-            painel.add(text2);
-            painel.add(botaoFacil);
-            painel.add(botaoMedio);
-            painel.add(botaoDificil);
+            painel.add(text1, gbc);
+            painel.add(text2, gbc);
+            painel.add(botaoFacil, gbc);
+            painel.add(botaoMedio, gbc);
+            painel.add(botaoDificil, gbc);
     
             botaoFacil.addActionListener(new ActionListener() {
                 @Override
@@ -101,21 +100,21 @@ public class SnakeGame extends JPanel implements ActionListener {
     public void executarFacil () {
         criarMaca();
         executandoFacil = true;
-        timer = new Timer(90, this);
+        timer = new Timer(180, this);
         timer.start();
     }
 
     public void executarMedio () {
         criarMaca();
         executandoMedio = true;
-        timer = new Timer(120, this);
+        timer = new Timer(100, this);
         timer.start();
     }
 
     public void executarDificil () {
         criarMaca();
         executandoDificil = true;
-        timer = new Timer(125, this);
+        timer = new Timer(95, this);
         timer.start();
     }
 
@@ -127,8 +126,8 @@ public class SnakeGame extends JPanel implements ActionListener {
 
     public void criarPedra () {
         for (int i = 0 ; i < qntPedras ; i++) {
-            pedraaX[i] = random.nextInt(larguraTela / tamBloco) * tamBloco;
-            pedraaY[i] = random.nextInt(larguraTela / tamBloco) * tamBloco;
+            pedraX[i] = random.nextInt(larguraTela / tamBloco) * tamBloco;
+            pedraY[i] = random.nextInt(larguraTela / tamBloco) * tamBloco;
         }
     }
 
@@ -163,17 +162,25 @@ public class SnakeGame extends JPanel implements ActionListener {
     }
 
     public void desenharTela (Graphics g) {
-
         if (executandoFacil || executandoMedio) {
             desenho(g);
 
         } else if (executandoDificil) {
             desenho(g);
-            g.setColor(Color.GRAY);
             for (int i = 0 ; i < qntPedras ; i++) {
-                g.fillRect(pedraaX[i], pedraaY[i], tamBloco, tamBloco);
+                boolean cobraNaPedra = false;
+                for (int j = 0 ; j < corpoCobra ; j++) {
+                    if (eixoX[j] == pedraX[i] && eixoY[j] == pedraY[i]) {
+                        cobraNaPedra = true;
+                        break;
+                    }
+                }
+                if (!cobraNaPedra && (macaX != pedraX[i] && macaY != pedraY[i])) {
+                    g.setColor(Color.GRAY);
+                    g.fillRect(pedraX[i], pedraY[i], tamBloco, tamBloco);
+                }
             }
-        } else {
+        } else if (!executandoDificil && !executandoFacil && !executandoMedio) {
             encerrar(g);
         }
     }
@@ -237,7 +244,7 @@ public class SnakeGame extends JPanel implements ActionListener {
     private void inserirLimites () {
         //Condição da pedra
         for (int i = 0 ; i < qntPedras ; i++) {
-            if (eixoX[0] == pedraaX[i] && eixoY[0] == pedraaY[i]) {
+            if (eixoX[0] == pedraX[i] && eixoY[0] == pedraY[i]) {
                 executandoDificil = false;
             }
         }
@@ -253,13 +260,13 @@ public class SnakeGame extends JPanel implements ActionListener {
         }
 
         //Condição das bordas
-        if (eixoX[0] < 0 || eixoX[0] > larguraTela) { //Esquerda ou Direita
+        if (eixoX[0] < 0 || eixoX[0] >= larguraTela) { //Esquerda ou Direita
             executandoFacil = false;
             executandoMedio = false;
             executandoDificil = false;
         }
 
-        if (eixoY[0] < 0 || eixoY[0] > alturaTela) { //Cima ou Baixo
+        if (eixoY[0] < 0 || eixoY[0] >= alturaTela) { //Cima ou Baixo
             executandoFacil = false;
             executandoMedio = false;
             executandoDificil = false;
