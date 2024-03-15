@@ -96,6 +96,17 @@ public class SnakeGame extends JPanel implements ActionListener {
             add(painel);
             setVisible(true);
         }
+        
+    public void start(){
+        random = new Random();
+        criarPedra();
+        setPreferredSize(new Dimension(larguraTela, alturaTela));
+        setBackground(Color.BLACK);
+        addKeyListener(new LeitorDeTeclas());
+        setFocusable(true);
+        menuFases();
+    }
+
 
     public void executarFacil () {
         criarMaca();
@@ -193,7 +204,7 @@ public class SnakeGame extends JPanel implements ActionListener {
         g.setFont(new Font("Arial", Font.BOLD, 65));
         g.drawString("You lost", 470, alturaTela / 2);
         timer.stop();
-        menuFases();
+        
     }
 
     @Override
