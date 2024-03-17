@@ -8,6 +8,8 @@ import javax.swing.*;
 public class App extends JFrame {
     public static void main (String[] args) {
         new App();
+        //Arrumar bug pedra invisivel
+        //Qnd perde botao voltar pro menu, ou clicar alg tecla p voltar
         
     }
 

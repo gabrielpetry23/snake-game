@@ -11,7 +11,7 @@ public class SnakeGame extends JPanel implements ActionListener {
     private static final int larguraTela = 1200;
     private static final int tamBloco = 45;
     private static final int unidades = larguraTela * alturaTela / (tamBloco * tamBloco);
-    private int qntPedras = 12;
+    private int qntPedras = 10;
 
     private final int[] eixoX = new int[unidades];
     private final int[] eixoY = new int[unidades]; 
@@ -19,13 +19,13 @@ public class SnakeGame extends JPanel implements ActionListener {
     private int[] pedraY = new int[qntPedras];
 
     private int corpoCobra = 3;
-    private int blocosComidos;
+    private int blocosComidos = 0;
     private int macaX;
     private int macaY;
     private char direcao = 'D';
-    private boolean executandoFacil = false;
-    private boolean executandoMedio = false;
     private boolean executandoDificil = false;
+    private boolean cobraNaPedra = false;
+    private boolean gameOver = false;
 
     Timer timer;
     Random random;
@@ -96,28 +96,15 @@ public class SnakeGame extends JPanel implements ActionListener {
             add(painel);
             setVisible(true);
         }
-        
-    public void start(){
-        random = new Random();
-        criarPedra();
-        setPreferredSize(new Dimension(larguraTela, alturaTela));
-        setBackground(Color.BLACK);
-        addKeyListener(new LeitorDeTeclas());
-        setFocusable(true);
-        menuFases();
-    }
-
 
     public void executarFacil () {
         criarMaca();
-        executandoFacil = true;
         timer = new Timer(180, this);
         timer.start();
     }
 
     public void executarMedio () {
         criarMaca();
-        executandoMedio = true;
         timer = new Timer(100, this);
         timer.start();
     }
@@ -173,13 +160,9 @@ public class SnakeGame extends JPanel implements ActionListener {
     }
 
     public void desenharTela (Graphics g) {
-        if (executandoFacil || executandoMedio) {
-            desenho(g);
-
-        } else if (executandoDificil) {
+        if (executandoDificil) {
             desenho(g);
             for (int i = 0 ; i < qntPedras ; i++) {
-                boolean cobraNaPedra = false;
                 for (int j = 0 ; j < corpoCobra ; j++) {
                     if (eixoX[j] == pedraX[i] && eixoY[j] == pedraY[i]) {
                         cobraNaPedra = true;
@@ -191,7 +174,11 @@ public class SnakeGame extends JPanel implements ActionListener {
                     g.fillRect(pedraX[i], pedraY[i], tamBloco, tamBloco);
                 }
             }
-        } else if (!executandoDificil && !executandoFacil && !executandoMedio) {
+        } else {
+            desenho(g);
+        }
+
+        if (gameOver) {
             encerrar(g);
         }
     }
@@ -203,18 +190,20 @@ public class SnakeGame extends JPanel implements ActionListener {
         g.setColor(Color.red);
         g.setFont(new Font("Arial", Font.BOLD, 65));
         g.drawString("You lost", 470, alturaTela / 2);
-        timer.stop();
-        
     }
 
     @Override
     public void actionPerformed (ActionEvent e) {
-        if (executandoFacil || executandoMedio || executandoDificil) {
-            andar();
-            comeuMaca();
-            inserirLimites();
+        andar();
+        comeuMaca();
+        inserirLimites();
+        
+        if (gameOver) {
+            timer.stop();
+            repaint();
+        } else {
+            repaint();
         }
-        repaint();
     }
 
     private void andar () {
@@ -254,33 +243,30 @@ public class SnakeGame extends JPanel implements ActionListener {
 
     private void inserirLimites () {
         //Condição da pedra
-        for (int i = 0 ; i < qntPedras ; i++) {
-            if (eixoX[0] == pedraX[i] && eixoY[0] == pedraY[i]) {
-                executandoDificil = false;
+        if (executandoDificil) {
+            for (int i = 0 ; i < qntPedras ; i++) {
+                if (eixoX[0] == pedraX[i] && eixoY[0] == pedraY[i]) {
+                    gameOver = true;
+                    break;
+                }
             }
         }
 
         //Condição do corpo
         for (int i = corpoCobra; i > 0; i--) { 
             if (eixoX[0] == eixoX[i] && eixoY[0] == eixoY[i]) {
-                executandoFacil = false;
-                executandoMedio = false;
-                executandoDificil = false;
+                gameOver = true;
                 break;
             }
         }
 
         //Condição das bordas
         if (eixoX[0] < 0 || eixoX[0] >= larguraTela) { //Esquerda ou Direita
-            executandoFacil = false;
-            executandoMedio = false;
-            executandoDificil = false;
+            gameOver = true;
         }
 
         if (eixoY[0] < 0 || eixoY[0] >= alturaTela) { //Cima ou Baixo
-            executandoFacil = false;
-            executandoMedio = false;
-            executandoDificil = false;
+            gameOver = true;
         }
     }
 
@@ -309,6 +295,20 @@ public class SnakeGame extends JPanel implements ActionListener {
                         direcao = 'S';
                     }
                     break;
+                case KeyEvent.VK_SPACE:
+                    if (gameOver) {
+                        corpoCobra = 3;
+                        blocosComidos = 0;
+                        executandoDificil = false;
+                        cobraNaPedra = false;
+                        gameOver = false;
+                        direcao = 'D';
+                        eixoX[0] = 0;
+                        eixoY[0] = 0;
+                        timer.start();
+                    }
+                    break;
+                    
                 default:
                     break;
             }
