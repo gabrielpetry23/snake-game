@@ -8,8 +8,8 @@ import javax.swing.*;
 
 public class SnakeGame extends JPanel implements ActionListener {
     private static final int alturaTela = 800;
-    private static final int larguraTela = 1200;
-    private static final int tamBloco = 45;
+    private static final int larguraTela = 1000;
+    private static final int tamBloco = 40;
     private static final int unidades = larguraTela * alturaTela / (tamBloco * tamBloco);
     private int qntPedras = 10;
 
@@ -186,10 +186,13 @@ public class SnakeGame extends JPanel implements ActionListener {
     public void encerrar (Graphics g) {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 25));
-        g.drawString("Pontuação: " +blocosComidos, 525, 440);
+        g.drawString("Score: " +blocosComidos, 475, 440);
         g.setColor(Color.red);
         g.setFont(new Font("Arial", Font.BOLD, 65));
-        g.drawString("You lost", 470, alturaTela / 2);
+        g.drawString("Game Over", larguraTela/3, alturaTela / 2);
+        g.setColor(Color.YELLOW);
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.drawString("'SPACE' to try again", 430, 475);
     }
 
     @Override
