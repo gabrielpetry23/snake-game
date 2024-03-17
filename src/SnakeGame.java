@@ -112,22 +112,54 @@ public class SnakeGame extends JPanel implements ActionListener {
     public void executarDificil () {
         criarMaca();
         executandoDificil = true;
-        timer = new Timer(95, this);
+        timer = new Timer(110, this); 
         timer.start();
     }
 
     private void criarMaca () {
-        //Cria as maças em blocos aleatorios
         macaX = random.nextInt(larguraTela / tamBloco) * tamBloco;
         macaY = random.nextInt(alturaTela / tamBloco) * tamBloco;
     }
 
     public void criarPedra () {
         for (int i = 0 ; i < qntPedras ; i++) {
-            pedraX[i] = random.nextInt(larguraTela / tamBloco) * tamBloco;
-            pedraY[i] = random.nextInt(larguraTela / tamBloco) * tamBloco;
+            int[] posicao = gerarPosicao();
+            pedraX[i] = posicao[0];
+            pedraY[i] = posicao[1];
         }
     }
+    
+    public int[] gerarPosicao() {
+        int x = 0;
+        int y = 0;
+        boolean posicaoValida = false;
+    
+        //Loop para achar posição válida, se achou armazena no vetor e retorna
+        while (!posicaoValida) {
+            x = random.nextInt(larguraTela / tamBloco) * tamBloco;
+            y = random.nextInt(alturaTela / tamBloco) * tamBloco;
+            posicaoValida = validarPosicao(x, y);
+        }
+    
+        return new int[]{x, y};
+    }
+    
+    public boolean validarPosicao(int x, int y) {
+        //Condição cobra
+        for (int j = 0; j < corpoCobra; j++) {
+            if (x == eixoX[j] && y == eixoY[j]) {
+                return false;
+            }
+        }
+    
+        //Condição maçã
+        if (x == macaX && y == macaY) {
+            return false;
+        }
+    
+        return true; 
+    }
+    
 
     @Override
     public void paintComponent (Graphics g) {
@@ -161,19 +193,12 @@ public class SnakeGame extends JPanel implements ActionListener {
 
     public void desenharTela (Graphics g) {
         if (executandoDificil) {
-            desenho(g);
             for (int i = 0 ; i < qntPedras ; i++) {
-                for (int j = 0 ; j < corpoCobra ; j++) {
-                    if (eixoX[j] == pedraX[i] && eixoY[j] == pedraY[i]) {
-                        cobraNaPedra = true;
-                        break;
-                    }
-                }
-                if (!cobraNaPedra && (macaX != pedraX[i] && macaY != pedraY[i])) {
-                    g.setColor(Color.GRAY);
-                    g.fillRect(pedraX[i], pedraY[i], tamBloco, tamBloco);
-                }
+                g.setColor(Color.GRAY);
+                g.fillRect(pedraX[i], pedraY[i], tamBloco, tamBloco);
             }
+            desenho(g);
+
         } else {
             desenho(g);
         }
@@ -300,15 +325,7 @@ public class SnakeGame extends JPanel implements ActionListener {
                     break;
                 case KeyEvent.VK_SPACE:
                     if (gameOver) {
-                        corpoCobra = 3;
-                        blocosComidos = 0;
-                        executandoDificil = false;
-                        cobraNaPedra = false;
-                        gameOver = false;
-                        direcao = 'D';
-                        eixoX[0] = 0;
-                        eixoY[0] = 0;
-                        timer.start();
+                        reiniciar();
                     }
                     break;
                     
@@ -316,5 +333,18 @@ public class SnakeGame extends JPanel implements ActionListener {
                     break;
             }
         }
+    }
+
+    public void reiniciar() {
+        corpoCobra = 3;
+        blocosComidos = 0;
+        cobraNaPedra = false;
+        gameOver = false;
+        direcao = 'D';
+        eixoX[0] = 0;
+        eixoY[0] = 0;
+        criarPedra();
+        repaint();
+        timer.start();
     }
 }
